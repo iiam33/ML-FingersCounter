@@ -30,7 +30,7 @@ class HandDetector:
             [20, 19, 18, 17],
         ]
 
-    def findHands(self, img, draw=True):
+    def findHands(self, img, draw=False):
         self.img = img
         self.landmarks = {}
         self.polarLandmarks = {}
