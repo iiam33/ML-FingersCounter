@@ -4,7 +4,7 @@ from cmath import phase
 
 
 class HandDetector:
-    def __init__(self, mode=False, maxHands=2, detectionCon=0.6, trackCon=0.6) -> None:
+    def __init__(self, mode=False, maxHands=2, detectionCon=0.6, trackCon=0.5) -> None:
         self.img = None
         self.landmarks = []
         self.bbox = []
@@ -119,15 +119,16 @@ class HandDetector:
 
             xList = [i[0] for i in self.landmarks[handNo]]
             yList = [i[1] for i in self.landmarks[handNo]]
-            xmin, xmax = min(xList), max(xList)
-            ymin, ymax = min(yList), max(yList)
-            self.bbox[handNo] = xmin, ymin, xmax, ymax
+            x, xmax = min(xList), max(xList)
+            y, ymax = min(yList), max(yList)
+            w, h = xmax - x, ymax - y
+            self.bbox[handNo] = x, y, w, h
 
             if draw:
                 cv2.rectangle(
                     self.img,
-                    (xmin, ymin),
-                    (xmax, ymax),
+                    (x, y),
+                    (x + w, y + h),
                     color,
                     2,
                 )

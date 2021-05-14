@@ -10,7 +10,7 @@ def main():
 
         success, img = cap.read()
         img = cv2.flip(img, 1)
-        nHands = detector.findHands(img)
+        nHands = detector.findHands(img, draw=False)
 
         for i in range(nHands):
 
@@ -18,17 +18,16 @@ def main():
             anchor = lm[0]
             bbox = detector.getBorderBox(i)
             polarFingers = detector.getPolerFingersLandmarks()
-
             number = countFingers(polarFingers)
-
+            sizeFactor = 5 * (bbox[2] * bbox[3]) / (img.shape[0] * img.shape[1])
             cv2.putText(
                 img,
                 str(number),
-                (anchor[0] - 28, bbox[1] - 20),
+                (int(anchor[0] - (sizeFactor * 60)), bbox[1] - 20),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                3,
-                (255, 0, 255),
-                3,
+                sizeFactor * 3 + 1.3,
+                (0, 0, 255),
+                2,
             )
 
         cv2.imshow("Fingers Counter", img)
