@@ -16,7 +16,7 @@ def main():
 
             lm = detector.getLandmarks(i)
             anchor = lm[0]
-            bbox = detector.getBoarderBox(i)
+            bbox = detector.getBorderBox(i)
             polarFingers = detector.getPolerFingersLandmarks()
 
             number = countFingers(polarFingers)
