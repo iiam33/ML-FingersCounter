@@ -11,9 +11,9 @@ class HandDetector:
         self.trackCon = trackCon
 
         self.img = None
-        self.landmarks = {}
-        self.bbox = {}
-        self.polarLandmarks = {}
+        self.landmarks = []
+        self.bbox = []
+        self.polarLandmarks = []
         self.nHands = 0
 
         self.mpHands = mp.solutions.hands
@@ -22,6 +22,7 @@ class HandDetector:
         self.hands = self.mpHands.Hands(
             self.mode, self.maxHands, self.detectionCon, self.trackCon
         )
+
         self.fingerIDs = [
             [4, 3, 2],
             [8, 7, 6, 5],
@@ -32,24 +33,23 @@ class HandDetector:
 
     def findHands(self, img, draw=True):
         self.img = img
-        self.landmarks = {}
-        self.polarLandmarks = {}
-        self.bbox = {}
+        self.landmarks = []
+        self.polarLandmarks = []
+        self.bbox = []
         self.nHands = 0
-        # convert the image color system to RGB to be processed by the mediapipe library
-        imgRGB = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
 
-        # Process the image in real time to find the hands (max is 2 by defaults)
-        self.results = self.hands.process(imgRGB)
+        # Convert the image color system to RGB then Process real time to detect and locate the hands (max is 2 by defaults)
+        self.results = self.hands.process(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))
 
-        # Draw lines per hand (max is 2 by defaults)
         if self.results.multi_hand_landmarks:
             self.nHands = len(self.results.multi_hand_landmarks)
-            for handNo, handLMS in enumerate(self.results.multi_hand_landmarks):
-                self.landmarks[handNo] = []
-                self.polarLandmarks[handNo] = []
-                self.bbox[handNo] = []
-                if draw:
+            self.landmarks = [[]] * self.nHands
+            self.polarLandmarks = [[]] * self.nHands
+            self.bbox = [[]] * self.nHands
+
+            # Draw lines per hand (max is 2 by defaults)
+            if draw:
+                for handLMS in self.results.multi_hand_landmarks:
                     self.mpDraw.draw_landmarks(
                         self.img, handLMS, self.mpHands.HAND_CONNECTIONS
                     )
@@ -57,7 +57,6 @@ class HandDetector:
         return self.nHands
 
     def getLandmarks(self, handNo=0, showID=False, color=(255, 0, 255)):
-
         if self.nHands > handNo:
             myHand = self.results.multi_hand_landmarks[handNo]
             for id, lm in enumerate(myHand.landmark):
@@ -110,7 +109,7 @@ class HandDetector:
     def getPolerFingersLandmarks(self, handNo=0):
         if self.nHands > handNo:
             if not self.polarLandmarks[handNo]:
-                self.getPolarLandmarks( handNo)
+                self.getPolarLandmarks(handNo)
 
             fingersLM = {
                 finger: [self.polarLandmarks[handNo][i] for i in f]
