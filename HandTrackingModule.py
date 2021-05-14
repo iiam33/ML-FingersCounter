@@ -4,7 +4,7 @@ from cmath import phase
 
 
 class HandDetector:
-    def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackCon=0.5) -> None:
+    def __init__(self, mode=False, maxHands=2, detectionCon=0.6, trackCon=0.6) -> None:
         self.mode = mode
         self.maxHands = maxHands
         self.detectionCon = detectionCon
