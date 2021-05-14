@@ -5,24 +5,11 @@ from cmath import phase
 
 class HandDetector:
     def __init__(self, mode=False, maxHands=2, detectionCon=0.6, trackCon=0.6) -> None:
-        self.mode = mode
-        self.maxHands = maxHands
-        self.detectionCon = detectionCon
-        self.trackCon = trackCon
-
         self.img = None
         self.landmarks = []
         self.bbox = []
         self.polarLandmarks = []
         self.nHands = 0
-
-        self.mpHands = mp.solutions.hands
-        self.mpDraw = mp.solutions.drawing_utils
-
-        self.hands = self.mpHands.Hands(
-            self.mode, self.maxHands, self.detectionCon, self.trackCon
-        )
-
         self.fingerIDs = [
             [4, 3, 2],
             [8, 7, 6, 5],
@@ -30,6 +17,11 @@ class HandDetector:
             [16, 15, 14, 13],
             [20, 19, 18, 17],
         ]
+
+        self.mpHands = mp.solutions.hands
+        self.mpDraw = mp.solutions.drawing_utils
+
+        self.hands = self.mpHands.Hands(mode, maxHands, detectionCon, trackCon)
 
     def findHands(self, img, draw=True):
         self.img = img
