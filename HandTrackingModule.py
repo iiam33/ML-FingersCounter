@@ -112,7 +112,7 @@ class HandDetector:
             return fingersLM
         return None
 
-    def getBoarderBox(self, handNo=0, draw=False, color=(0, 255, 0)):
+    def getBorderBox(self, handNo=0, draw=False, color=(0, 255, 0)):
         if self.nHands > handNo:
             if not self.landmarks[handNo]:
                 self.getLandmarks(self.img.copy(), handNo)
@@ -126,8 +126,8 @@ class HandDetector:
             if draw:
                 cv2.rectangle(
                     self.img,
-                    (xmin - 20, ymin - 20),
-                    (xmax + 20, ymax + 20),
+                    (xmin, ymin),
+                    (xmax, ymax),
                     color,
                     2,
                 )
@@ -156,7 +156,7 @@ def main():
         detector.findHands(img)
 
         detector.getLandmarks()
-        detector.getBoarderBox(draw=True)
+        detector.getBorderBox(draw=True)
         fingers = detector.getFingersLandmarks()
         if fingers:
             cv2.circle(img, fingers["index"][0], 10, (255, 0, 255), 3)
