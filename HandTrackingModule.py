@@ -180,7 +180,7 @@ class HandDetector:
             w, h = xmax - x, ymax - y
             self.bbox[handID] = x, y, w, h
 
-            if draw:
+            if drawBox:
                 cv2.rectangle(
                     self.img,
                     (x, y),
