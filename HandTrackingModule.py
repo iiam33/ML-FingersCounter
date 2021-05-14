@@ -4,7 +4,19 @@ from cmath import phase
 
 
 class HandDetector:
-    def __init__(self, mode=False, maxHands=2, detectionCon=0.6, trackCon=0.5) -> None:
+    def __init__(
+        self, STATIC_IMAGE_MODE=False, maxHands=2, detectionCon=0.6, trackCon=0.5
+    ) -> None:
+        """Initalize the hand detector
+
+        Args:
+            STATIC_IMAGE_MODE (bool, optional): [description]. Defaults to False.
+            maxHands (int, optional):           Maximum number of hands to detect. Defaults to 2.
+            detectionCon (float, optional):     Minimum confidence value ([0.0, 1.0]) from the hand detection model
+                                                for the detection to be considered successful. Defaults to 0.6.
+            trackCon (float, optional):         Minimum confidence value ([0.0, 1.0]) from the landmark-tracking model
+                                                for the hand landmarks to be considered tracked successfully, or otherwise hand detection will be invoked automatically on the next input image. Defaults to 0.5.
+        """
         self.img = None
         self.landmarks = []
         self.bbox = []
@@ -17,30 +29,41 @@ class HandDetector:
             [16, 15, 14, 13],
             [20, 19, 18, 17],
         ]
-
         self.mpHands = mp.solutions.hands
         self.mpDraw = mp.solutions.drawing_utils
 
-        self.hands = self.mpHands.Hands(mode, maxHands, detectionCon, trackCon)
+        self.hands = self.mpHands.Hands(
+            STATIC_IMAGE_MODE, maxHands, detectionCon, trackCon
+        )
 
-    def findHands(self, img, draw=True):
-        self.img = img
-        self.landmarks = []
-        self.polarLandmarks = []
-        self.bbox = []
-        self.nHands = 0
+    def findHands(self, img, drawHandConnections=True):
+        """Process input image to find, detect and, locate hands
+
+        Args:
+            img (numpy-like 3d tensor):             image to be processed
+            drawHandConnections (bool, optional):   (if true) draw the connection between landmarks on the image
+                                                    for debuging and visualization. Defaults to True.
+
+        Returns:
+            int: number of hands found in the image
+        """
+        self.img = img  # store the img in a local attribute
+        self.nHands = 0  # set the number of hands to 0 as defualt
 
         # Convert the image color system to RGB then Process real time to detect and locate the hands (max is 2 by defaults)
         self.results = self.hands.process(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))
 
         if self.results.multi_hand_landmarks:
             self.nHands = len(self.results.multi_hand_landmarks)
+            # reset the landmarks to an empty lists
             self.landmarks = [[]] * self.nHands
+            # reset the polarLandmarks to an empty lists
             self.polarLandmarks = [[]] * self.nHands
+            # reset the bbox to an empty lists
             self.bbox = [[]] * self.nHands
 
-            # Draw lines per hand (max is 2 by defaults)
-            if draw:
+            # Draw lines for each hand
+            if drawHandConnections:
                 for handLMS in self.results.multi_hand_landmarks:
                     self.mpDraw.draw_landmarks(
                         self.img, handLMS, self.mpHands.HAND_CONNECTIONS
@@ -48,33 +71,39 @@ class HandDetector:
 
         return self.nHands
 
-    def getLandmarks(self, handNo=0, showID=False, color=(255, 0, 255)):
-        if self.nHands > handNo:
-            myHand = self.results.multi_hand_landmarks[handNo]
-            for id, lm in enumerate(myHand.landmark):
+    def getLandmarks(self, handID=0):
+        """find and return the cordinates of all the landmarks for spcific and
+
+        Args:
+            handID (int, optional): hand ID (0..n). Defaults to 0.
+
+        Returns:
+            list or None: list of cordinates for all the landmarks or None if no hand detected
+        """
+        if self.nHands > handID:
+            myHand = self.results.multi_hand_landmarks[handID]
+            for lm in myHand.landmark:
                 imgHight, imgWidth, _ = self.img.shape
                 cx, cy = int(lm.x * imgWidth), int(lm.y * imgHight)
-                self.landmarks[handNo].append((cx, cy))
-                if showID:
-                    cv2.putText(
-                        self.img,
-                        str(id),
-                        (cx, cy),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        color,
-                        2,
-                    )
-            return self.landmarks[handNo]
+                self.landmarks[handID].append((cx, cy))
+            return self.landmarks[handID]
         return None
 
-    def getFingersLandmarks(self, handNo=0):
-        if self.nHands > handNo:
-            if not self.landmarks[handNo]:
-                self.getlandmarks(handNo)
+    def getFingersLandmarks(self, handID=0):
+        """find the landmarks for each finger
+
+        Args:
+            handID (int, optional): hand ID (0..n). Defaults to 0.
+
+        Returns:
+            dict or None: dictinary of list of landmarks for each finger ("thumb", "index", "middle", "ring", "pinky")
+        """
+        if self.nHands > handID:
+            if not self.landmarks[handID]:
+                self.getlandmarks(handID)
 
             fingersLM = {
-                finger: [self.landmarks[handNo][i] for i in f]
+                finger: [self.landmarks[handID][i] for i in f]
                 for f, finger in zip(
                     self.fingerIDs, ["thumb", "index", "middle", "ring", "pinky"]
                 )
@@ -82,29 +111,45 @@ class HandDetector:
             return fingersLM
         return None
 
-    def getPolarLandmarks(self, handNo=0):
-        if self.nHands > handNo:
-            if not self.landmarks[handNo]:
-                self.getLandmarks(self.img.copy(), handNo)
+    def getPolarLandmarks(self, handID=0):
+        """get the polar coordinates (angle, distance) for the wrist point
 
-            anchor = self.landmarks[handNo][0]
-            self.polarLandmarks[handNo] = [
+        Args:
+            handID (int, optional): [description]. Defaults to 0.
+
+        Returns:
+            list: list of polar coordinates (angle in radian)
+        """
+        if self.nHands > handID:
+            if not self.landmarks[handID]:
+                self.getLandmarks(self.img.copy(), handID)
+
+            anchor = self.landmarks[handID][0]
+            self.polarLandmarks[handID] = [
                 (
                     phase(complex(p[0] - anchor[0], p[1] - anchor[1])),
                     abs(complex(p[0] - anchor[0], p[1] - anchor[1])),
                 )
-                for p in self.landmarks[handNo]
+                for p in self.landmarks[handID]
             ]
-            return self.polarLandmarks[handNo]
+            return self.polarLandmarks[handID]
         return None
 
-    def getPolerFingersLandmarks(self, handNo=0):
-        if self.nHands > handNo:
-            if not self.polarLandmarks[handNo]:
-                self.getPolarLandmarks(handNo)
+    def getPolarFingersLandmarks(self, handID=0):
+        """get the Polar coordinates for each finger
+
+        Args:
+            handID (int, optional): [description]. Defaults to 0.
+
+        Returns:
+            dict or None: dictinary of list of landmarks polar coordinates (angle, distance) for each finger ("thumb", "index", "middle", "ring", "pinky")
+        """
+        if self.nHands > handID:
+            if not self.polarLandmarks[handID]:
+                self.getPolarLandmarks(handID)
 
             fingersLM = {
-                finger: [self.polarLandmarks[handNo][i] for i in f]
+                finger: [self.polarLandmarks[handID][i] for i in f]
                 for f, finger in zip(
                     self.fingerIDs, ["thumb", "index", "middle", "ring", "pinky"]
                 )
@@ -112,17 +157,28 @@ class HandDetector:
             return fingersLM
         return None
 
-    def getBorderBox(self, handNo=0, draw=False, color=(0, 255, 0)):
-        if self.nHands > handNo:
-            if not self.landmarks[handNo]:
-                self.getLandmarks(self.img.copy(), handNo)
+    def getBorderBox(self, handID=0, drawBox=False, color=(0, 255, 0)):
+        """Calculate and return the bounding box for the given hand
 
-            xList = [i[0] for i in self.landmarks[handNo]]
-            yList = [i[1] for i in self.landmarks[handNo]]
+        Args:
+            img (numpy-like 3d tensor):             image to be processed
+            drawBox (bool, optional):              (if true) draw the connection between landmarks on the image
+                                                    for debuging and visualization. Defaults to True.
+            color (tuple, optional):                bounding box color. Defaults to green(0, 255, 0). [works only if drawBox is set to True]
+
+        Returns:
+            tuple or None: (x, y, hight, width) of the bounding box
+        """
+        if self.nHands > handID:
+            if not self.landmarks[handID]:
+                self.getLandmarks(self.img.copy(), handID)
+
+            xList = [i[0] for i in self.landmarks[handID]]
+            yList = [i[1] for i in self.landmarks[handID]]
             x, xmax = min(xList), max(xList)
             y, ymax = min(yList), max(yList)
             w, h = xmax - x, ymax - y
-            self.bbox[handNo] = x, y, w, h
+            self.bbox[handID] = x, y, w, h
 
             if draw:
                 cv2.rectangle(
@@ -132,7 +188,7 @@ class HandDetector:
                     color,
                     2,
                 )
-            return self.bbox[handNo]
+            return self.bbox[handID]
         return None
 
 
@@ -141,9 +197,9 @@ class HandDetector:
 
 def main():
     # set the capture stream input
-    #   1- path to file
+    #   - path to file
     # or
-    #   2- number indecatin the capture device
+    #   - number indecatin the capture device
     #       0 => main device
     #       4 => loopback used with obs and DroidCam
 
@@ -157,7 +213,7 @@ def main():
         detector.findHands(img)
 
         detector.getLandmarks()
-        detector.getBorderBox(draw=True)
+        detector.getBorderBox(drawBox=True)
         fingers = detector.getFingersLandmarks()
         if fingers:
             cv2.circle(img, fingers["index"][0], 10, (255, 0, 255), 3)

@@ -10,14 +10,14 @@ def main():
 
         success, img = cap.read()
         img = cv2.flip(img, 1)
-        nHands = detector.findHands(img, draw=False)
+        nHands = detector.findHands(img, drawHandConnections=False)
 
         for i in range(nHands):
 
             lm = detector.getLandmarks(i)
             anchor = lm[0]
             bbox = detector.getBorderBox(i)
-            polarFingers = detector.getPolerFingersLandmarks()
+            polarFingers = detector.getPolarFingersLandmarks()
             number = countFingers(polarFingers)
             sizeFactor = 5 * (bbox[2] * bbox[3]) / (img.shape[0] * img.shape[1])
             cv2.putText(
