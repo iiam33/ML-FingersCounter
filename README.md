@@ -12,3 +12,7 @@ pip install -r requirments.txt
 ```sh
 python counter.py
 ```
+
+# Demo
+
+[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/fu2nGcCHiKM)
