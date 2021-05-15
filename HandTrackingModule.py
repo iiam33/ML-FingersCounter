@@ -1,4 +1,3 @@
-import cv2
 import mediapipe as mp
 from cmath import phase
 
@@ -193,6 +192,9 @@ class HandDetector:
 
 
 ##################################################
+
+### Demo of HandDetector
+import cv2
 
 
 def main():
