@@ -17,9 +17,9 @@ class HandDetector:
                                                 for the hand landmarks to be considered tracked successfully, or otherwise hand detection will be invoked automatically on the next input image. Defaults to 0.5.
         """
         self.img = None
-        self.landmarks = []
-        self.bbox = []
-        self.polarLandmarks = []
+        self.landmarks = None
+        self.bbox = None
+        self.polarLandmarks = None
         self.nHands = 0
         self.fingerIDs = [
             [4, 3, 2],
@@ -81,10 +81,11 @@ class HandDetector:
         """
         if self.nHands > handID:
             myHand = self.results.multi_hand_landmarks[handID]
-            for lm in myHand.landmark:
-                imgHight, imgWidth, _ = self.img.shape
-                cx, cy = int(lm.x * imgWidth), int(lm.y * imgHight)
-                self.landmarks[handID].append((cx, cy))
+            imgHight, imgWidth, _ = self.img.shape
+
+            self.landmarks[handID] = [
+                (int(lm.x * imgWidth), int(lm.y * imgHight)) for lm in myHand.landmark
+            ]
             return self.landmarks[handID]
         return None
 
