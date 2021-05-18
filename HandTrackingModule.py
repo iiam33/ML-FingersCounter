@@ -55,11 +55,11 @@ class HandDetector:
         if self.results.multi_hand_landmarks: 
             self.nHands = len(self.results.multi_hand_landmarks)
             # reset the landmarks to an empty lists
-            self.landmarks = [[]] * self.nHands
+            self.landmarks = [None] * self.nHands
             # reset the polarLandmarks to an empty lists
-            self.polarLandmarks = [[]] * self.nHands
+            self.polarLandmarks = [None] * self.nHands
             # reset the bbox to an empty lists
-            self.bbox = [[]] * self.nHands
+            self.bbox = [None] * self.nHands
 
             # Draw lines for each hand
             if  drawHandConnections                         : 
