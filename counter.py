@@ -5,10 +5,10 @@ import cv2
 
 
 def main():
-    cap = cv2.VideoCapture(0)  # Capture webcam video stream
+    cap      = cv2.VideoCapture(0)  # Capture webcam video stream
     detector = htm.HandDetector(maxHands=2)  # Initialize HandDetector
 
-    while cap.isOpened():  # Loop while webcam is open
+    while cap.isOpened(): # Loop while webcam is open
 
         _, img = cap.read()  # read images from the webcam
         # mirro the image horizontally (removing this line will not break the program)
@@ -16,7 +16,7 @@ def main():
         # process the image to find, detect and, locate the hands in the img
         nHands = detector.findHands(img, drawHandConnections=False)
 
-        for i in range(nHands):
+        for i in range(nHands): 
             img = processHand(img, detector, i)
         print()
 
@@ -24,12 +24,12 @@ def main():
         cv2.imshow("Fingers Counter", img)
         # Time in ms to wait before frames update (0 => do not update)
         cv2.waitKey(1)
-        if cv2.getWindowProperty("Fingers Counter", 4) < 1:
+        if cv2.getWindowProperty("Fingers Counter", 4) < 1: 
             cap.release()
 
 
 def processHand(img, detector, handID):
-    lm = detector.getLandmarks(handID)  # get the coordinates of the landmarks
+    lm     = detector.getLandmarks(handID)  # get the coordinates of the landmarks
     anchor = lm[0]                      # set the wrist landmark as anchor point
     # get the border box of the hand (x, y, width, hight)
     bbox = detector.getBorderBox(handID)
@@ -55,14 +55,14 @@ def processHand(img, detector, handID):
 def countFingers(fingers):
     """count the number of stritch fingers
 
-    Args:
-        fingers (dict): dictionary of fingers and their polar coordinates
+            Args  : 
+    fingers (dict): dictionary of fingers and their polar coordinates
 
-    Returns:
-        int: the number of stritch fingers
+    Returns: 
+    int    : the number of stritch fingers
     """
     total = 0
-    for finger in fingers.values():
+    for finger in fingers.values(): 
         total += fingerIsStretched(finger)
     return total
 
@@ -70,10 +70,10 @@ def countFingers(fingers):
 def fingerIsStretched(finger):
     """check if a certain finger is stretch or not
 
-    Args:
-        finger (list): list of polar coordinates
+           Args  : 
+    finger (list): list of polar coordinates
 
-    Returns:
+    Returns: 
         bool
     """
     thrushold = (
