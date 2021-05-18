@@ -11,29 +11,24 @@ def main():
     while cap.isOpened():  # Loop while webcam is open
 
         _, img = cap.read()  # read images from the webcam
-        img = cv2.flip(
-            img, 1
-        )  # mirro the image horizontally (removing this line will not break the program)
-        nHands = detector.findHands(
-            img, drawHandConnections=False
-        )  #   process the image to find, detect and, locate the hands in the img
+        # mirro the image horizontally (removing this line will not break the program)
+        img = cv2.flip(img, 1)
+
+        # process the image to find, detect and, locate the hands in the img
+        nHands = detector.findHands(img, drawHandConnections=False)
 
         for i in range(nHands):
 
             lm = detector.getLandmarks(i)  # get the coordinates of the landmarks
             anchor = lm[0]  # set the wrist landmark as anchor point
-            bbox = detector.getBorderBox(
-                i
-            )  # get the border box of the hand (x, y, width, hight)
-            polarFingers = detector.getPolarFingersLandmarks(
-                i
-            )  # get the polar coordinates of the landmarks (angle, distance) [wrist point is (0,0)]
-            number = countFingers(
-                polarFingers
-            )  # count the number of fingers in the image
-            sizeFactor = (
-                5 * (bbox[2] * bbox[3]) / (img.shape[0] * img.shape[1])
-            )  # set a scalling factor
+            # get the border box of the hand (x, y, width, hight)
+            bbox = detector.getBorderBox(i)
+            # get the polar coordinates of the landmarks (angle, distance) [wrist point is (0,0)]
+            polarFingers = detector.getPolarFingersLandmarks(i)
+            # count the number of fingers in the image
+            number = countFingers(polarFingers)
+            # set a scalling factor
+            sizeFactor = 5 * (bbox[2] * bbox[3]) / (img.shape[0] * img.shape[1])
 
             # put the number of fingers on the image above the hand using the scalling factor (sizeFactor) to change the size of the text
             cv2.putText(
