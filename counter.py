@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import HandTrackingModule as htm
 import cv2
 
