@@ -2,11 +2,20 @@
 
 import HandTrackingModule as htm
 import cv2
+import click
 
 
-def main():
-    cap = cv2.VideoCapture(4)  # Capture webcam video stream
-    detector = htm.HandDetector(maxHands=2)  # Initialize HandDetector
+@click.command()
+@click.option(
+    "--max-hands",
+    default=2,
+    type=int,
+    help="Maximum number of hands to be processed at the same time",
+)
+@click.option("--debug", is_flag=True, help="draw more info for debuging")
+def main(max_hands, debug):
+    cap = cv2.VideoCapture(0)  # Capture webcam video stream
+    detector = htm.HandDetector(maxHands=max_hands)  # Initialize HandDetector
 
     while cap.isOpened():  # Loop while webcam is open
 
@@ -14,10 +23,10 @@ def main():
         # mirro the image horizontally (removing this line will not break the program)
         img = cv2.flip(img, 1)
         # process the image to find, detect and, locate the hands in the img
-        nHands = detector.findHands(img, drawHandConnections=False)
+        nHands = detector.findHands(img, drawHandConnections=debug)
 
         for i in range(nHands):
-            img = processHand(img, detector, i)
+            img = processHand(img, detector, i, debug=debug)
 
         # display the results live on realtime
         cv2.imshow("Fingers Counter", img)
@@ -27,23 +36,31 @@ def main():
             cap.release()
 
 
-def processHand(img, detector, handID):
+def processHand(img, detector, handID, debug=False):
     lm = detector.getLandmarks(handID)  # get the coordinates of the landmarks
     anchor = lm[0]  # set the wrist landmark as anchor point
     # get the border box of the hand (x, y, width, hight)
-    bbox = detector.getBorderBox(handID)
+    bbox = detector.getBorderBox(handID, drawBox=debug)
+
+    fingers = detector.getFingersLandmarks(handID)
     # get the polar coordinates of the landmarks (angle, distance) [wrist point is (0,0)]
     polarFingers = detector.getPolarFingersLandmarks(handID)
+
     # count the number of fingers in the image
-    number = countFingers(polarFingers)
+    number = 0
+    for key, finger in polarFingers.items():
+        number += fingerIsStretched(finger)
+        if debug:
+            if fingerIsStretched(finger):
+                cv2.circle(img, fingers[key][-1], 9, (250, 0, 150), 2)
+
     # set a scalling factor
     sizeFactor = (5 * polarFingers["pinky"][-1][1] / img.shape[0]) ** 2
-    print(sizeFactor)
     # put the number of fingers on the image above the hand using the scalling factor (sizeFactor) to change the size of the text
     cv2.putText(
         img,
         str(number),
-        (int(anchor[0] - (sizeFactor * 60)), bbox[1] - 20),
+        (int(anchor[0] - (sizeFactor * 40)), bbox[1] - 20),
         cv2.FONT_HERSHEY_SIMPLEX,
         sizeFactor * 3.5 + 0.75,
         (0, 0, 255),

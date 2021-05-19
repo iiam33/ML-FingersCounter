@@ -1,8 +1,15 @@
 absl-py==0.12.0
+appdirs==1.4.4
 attrs==21.2.0
+black==21.5b1
+click==8.0.0
 mediapipe==0.8.4.2
+mypy-extensions==0.4.3
 numpy==1.20.3
 opencv-contrib-python==4.5.2.52
 opencv-python==4.5.2.52
+pathspec==0.8.1
 protobuf==3.16.0
+regex==2021.4.4
 six==1.16.0
+toml==0.10.2

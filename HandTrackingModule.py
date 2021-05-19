@@ -157,7 +157,7 @@ class HandDetector:
             return fingersLM
         return None
 
-    def getBorderBox(self, handID=0, drawBox=False, color=(0, 255, 0)): 
+    def getBorderBox(self, handID=0, drawBox=False, color=(255, 255, 0)): 
         """Calculate and return the bounding box for the given hand
 
                 Args                  : 
@@ -186,7 +186,7 @@ class HandDetector:
                     (x, y),
                     (x + w, y + h),
                     color,
-                    2,
+                    1,
                 )
             return self.bbox[handID]
         return None
