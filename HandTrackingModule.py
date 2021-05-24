@@ -89,7 +89,7 @@ class HandDetector:
             return self.landmarks[handID]
         return None
 
-    def getFingersLandmarks(self, handID=0): 
+    def getFingersLandmarks(self, handID=0):
         """find the landmarks for each finger
 
                Args           : 
@@ -98,17 +98,16 @@ class HandDetector:
              Returns: 
         dict or None: dictinary of list of landmarks for each finger ("thumb", "index", "middle", "ring", "pinky")
         """
-        if self.nHands > handID          :
+        if self.nHands > handID:
             if not self.landmarks[handID]: 
                 self.getlandmarks(handID)
 
-            fingersLM = {
+            return {
                 finger: [self.landmarks[handID][i] for i in f]
                 for f, finger in zip(
                     self.fingerIDs, ["thumb", "index", "middle", "ring", "pinky"]
                 )
             }
-            return fingersLM
         return None
 
     def getPolarLandmarks(self, handID=0): 
@@ -135,7 +134,7 @@ class HandDetector:
             return self.polarLandmarks[handID]
         return None
 
-    def getPolarFingersLandmarks(self, handID=0): 
+    def getPolarFingersLandmarks(self, handID=0):
         """get the Polar coordinates for each finger
 
                Args           : 
@@ -144,17 +143,16 @@ class HandDetector:
              Returns: 
         dict or None: dictinary of list of landmarks polar coordinates (angle, distance) for each finger ("thumb", "index", "middle", "ring", "pinky")
         """
-        if self.nHands > handID           : 
+        if self.nHands > handID: 
             if not self.polarLandmarks[handID]: 
                 self.getPolarLandmarks(handID)
 
-            fingersLM = {
+            return {
                 finger: [self.polarLandmarks[handID][i] for i in f]
                 for f, finger in zip(
                     self.fingerIDs, ["thumb", "index", "middle", "ring", "pinky"]
                 )
             }
-            return fingersLM
         return None
 
     def getBorderBox(self, handID=0, drawBox=False, color=(255, 255, 0)): 

@@ -50,9 +50,8 @@ def processHand(img, detector, handID, debug=False):
     number = 0
     for key, finger in polarFingers.items():
         number += fingerIsStretched(finger)
-        if debug:
-            if fingerIsStretched(finger):
-                cv2.circle(img, fingers[key][-1], 9, (250, 0, 150), 2)
+        if debug and fingerIsStretched(finger):
+            cv2.circle(img, fingers[key][-1], 9, (250, 0, 150), 2)
 
     # set a scalling factor
     sizeFactor = (5 * polarFingers["pinky"][-1][1] / img.shape[0]) ** 2
@@ -78,10 +77,7 @@ def countFingers(fingers):
     Returns:
     int    : the number of stritch fingers
     """
-    total = 0
-    for finger in fingers.values():
-        total += fingerIsStretched(finger)
-    return total
+    return sum(fingerIsStretched(finger) for finger in fingers.values())
 
 
 def fingerIsStretched(finger):
@@ -93,9 +89,10 @@ def fingerIsStretched(finger):
     Returns:
         bool
     """
-    thrushold = (
-        finger[-1][1] * 0.60
-    )  # 60% of the distance between the wrist point and the beginning of the finger
+    
+    # 60% of the distance between the wrist point and the beginning of the finger
+    thrushold = finger[-1][1] * 0.60
+    
     return (
         finger[0][1] - finger[-1][1] > thrushold
         and abs(
