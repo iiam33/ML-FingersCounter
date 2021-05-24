@@ -49,8 +49,8 @@ def processHand(img, detector, handID, debug=False):
     # count the number of fingers in the image
     number = 0
     for key, finger in polarFingers.items():
-        number += fingerIsStretched(finger)
-        if debug and fingerIsStretched(finger):
+        number += finger_is_stretched(finger)
+        if debug and finger_is_stretched(finger):
             cv2.circle(img, fingers[key][-1], 9, (250, 0, 150), 2)
 
     # set a scalling factor
@@ -68,7 +68,7 @@ def processHand(img, detector, handID, debug=False):
     return img
 
 
-def countFingers(fingers):
+def count_fingers(fingers):
     """count the number of stritch fingers
 
             Args  :
@@ -77,10 +77,10 @@ def countFingers(fingers):
     Returns:
     int    : the number of stritch fingers
     """
-    return sum(fingerIsStretched(finger) for finger in fingers.values())
+    return sum(finger_is_stretched(finger) for finger in fingers.values())
 
 
-def fingerIsStretched(finger):
+def finger_is_stretched(finger):
     """check if a certain finger is stretch or not
 
            Args  :
@@ -89,17 +89,19 @@ def fingerIsStretched(finger):
     Returns:
         bool
     """
-    
+
     # 60% of the distance between the wrist point and the beginning of the finger
     thrushold = finger[-1][1] * 0.60
-    
-    return (
-        finger[0][1] - finger[-1][1] > thrushold
-        and abs(
-            finger[0][0] - finger[-1][0],
-        )
-        < 0.22
-    )
+
+    return tip_is_farther(finger, thrushold) and joints_are_aligned(finger)
+
+
+def joints_are_aligned(finger):
+    return abs(finger[0][0] - finger[-1][0]) < 0.22
+
+
+def tip_is_farther(finger, thrushold):
+    return finger[0][1] - finger[-1][1] > thrushold
 
 
 if __name__ == "__main__":
