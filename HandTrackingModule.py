@@ -4,7 +4,7 @@ from cmath import phase
 
 class HandDetector:
     def __init__(
-        self, STATIC_IMAGE_MODE=False, maxHands=2, detectionCon=0.6, trackCon=0.5
+        self, STATIC_IMAGE_MODE=False, complexity=1, maxHands=2, detectionCon=0.6, trackCon=0.5
     ) -> None:
         """Initalize the hand detector
 
@@ -28,11 +28,15 @@ class HandDetector:
             [16, 15, 14, 13],
             [20, 19, 18, 17],
         ]
-        self.mpHands = mp.solutions.hands
-        self.mpDraw = mp.solutions.drawing_utils
+        self.mpHands = mp.solutions.mediapipe.python.solutions.hands
+        self.mpDraw = mp.solutions.mediapipe.python.solutions.drawing_utils
 
         self.hands = self.mpHands.Hands(
-            STATIC_IMAGE_MODE, maxHands, detectionCon, trackCon
+            static_image_mode=STATIC_IMAGE_MODE,
+            model_complexity = complexity, 
+            max_num_hands = maxHands, 
+            min_detection_confidence = detectionCon, 
+            min_tracking_confidence = trackCon
         )
 
     def find_hands(self, img, drawHandConnections=True):
